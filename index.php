@@ -1,10 +1,10 @@
 <?php
- 
+
 // Exibir erros da api
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
- 
+
 // Importações necessárias para a validação de email
 require_once ('PHPMailer-master/src/PHPMailer.php');
 require_once ('PHPMailer-master/src/SMTP.php');
@@ -12,27 +12,27 @@ require_once ('PHPMailer-master/src/Exception.php');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
- 
+
 // Variáveis de acesso
-$host = "*";
-$user = "*";
-$pass = "*";
-$bd = "*";
-$porta = "*";
- 
+$host = "junction.proxy.rlwy.net";
+$user = "root";
+$pass = "KoLRzTimjLNShDTQyzwJafpfKfemhAkA";
+$bd = "railway";
+$porta = "3306";
+
 // Executar conexão
 $conectar = @mysqli_connect($host,$user,$pass,$bd,$porta);
- 
-// Verificar se a conexão foi bem-sucedida
+
+// Verificar se a conexão foi bem sucedida
 if (!$conectar) {
     die ("erro ".mysqli_connect_error());
 }
- 
+
 // Tratando requisição de cadastro
 if (isset($_POST['cadastro'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['cadastro'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $nome = $parametrosDivididos[0];
@@ -41,14 +41,14 @@ if (isset($_POST['cadastro'])) {
     $dataNasc = $parametrosDivididos[3];
     $dataAtual = $parametrosDivididos[4];
     $imgPerfil = $parametrosDivididos[5];
- 
+
     // Verificar se o email inserido já existe na base de dados
     $sqlVerificarDuplicacaoEmail = "SELECT * FROM Usuario WHERE Email_Responsavel = ?";
     
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sqlVerificarDuplicacaoEmail);
- 
-    // Verificação de SQL Injection
+
+    // Verificação de SLQ Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("s", $email);
         $verificarInjection->execute();
@@ -62,12 +62,12 @@ if (isset($_POST['cadastro'])) {
         else {
             $sql = "INSERT INTO Usuario(Nome_Usuario,Email_Responsavel,Senha,Dt_Nascimento,Dt_Cadastro,Ft_Perfil,Total_Pontuacao,Id_Astro) VALUES ('$nome','$email','$senha','$dataNasc','$dataAtual','$imgPerfil',0,1)";
             $verificarInjection = $conectar->prepare($sql);
- 
+
             //Prevenção do SQL Injection
             if ($verificarInjection) {
                 $verificarInjection->execute();
                 $resultadoCadastro = $verificarInjection->get_result();
- 
+
                 if ($resultadoCadastro) {
                     echo "inserido";
                 }
@@ -82,29 +82,29 @@ if (isset($_POST['cadastro'])) {
         echo "erro para verificar injecao";
     }
 }
- 
+
 // Tratando requisição de login
 if (isset($_POST['login'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['login'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $email = $parametrosDivididos[0];
     $senha = $parametrosDivididos[1];
- 
+
     // Buscando o usuário no banco conforme as credenciais inseridas
     $sql = "SELECT * FROM Usuario WHERE Email_Responsavel = ? AND Senha = ?";
- 
+
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sql);
- 
-    // Verificação de SQL Injection
+
+    // Verificação de SLQ Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("ss", $email, $senha);
         $verificarInjection->execute();
         $resultado = $verificarInjection->get_result();
- 
+
         // Obter os dados do usuário caso encontrado
         if ($resultado->num_rows > 0) {
             $linha = $resultado->fetch_assoc();
@@ -125,24 +125,24 @@ if (isset($_POST['login'])) {
         echo "erro para verificar injecao";
     }
 }
- 
+
 //Verificação se o e-mail já foi cadastrado anteriormente
 if (isset($_POST['verificarExistenciaEmail'])) {
     // Armazenando os dados contidos na requisição
     $email = $_POST['verificarExistenciaEmail'];
- 
+
     // Buscando o usuário no banco conforme as credenciais inseridas
     $sql = "SELECT * FROM Usuario WHERE Email_Responsavel = ?";
- 
+
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sql);
- 
-    // Verificação de SQL Injection
+
+    // Verificação de SLQ Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("s", $email);
         $verificarInjection->execute();
         $resultado = $verificarInjection->get_result();
- 
+
         // Enviar uma mensagem caso o e-mail seja encontrado
         if ($resultado->num_rows > 0) {
             echo "existe";
@@ -151,24 +151,24 @@ if (isset($_POST['verificarExistenciaEmail'])) {
         }
     }
 }
- 
+
 // Tratando requisição de alterar senha
 if (isset($_POST['alterarSenha'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['alterarSenha'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $email = $parametrosDivididos[0];
     $senha = $parametrosDivididos[1];
- 
+
     //Atualização da senha no banco
     $sql = "UPDATE Usuario SET Senha = ? WHERE Email_Responsavel = ?";
- 
+
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sql);
- 
-    // Verificação de SQL Injection
+
+    // Verificação de SLQ Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("ss",$senha,$email);
         if ($verificarInjection->execute()) {
@@ -183,12 +183,12 @@ if (isset($_POST['alterarSenha'])) {
         $verificarInjection->close();
     }
 }
- 
+
 // Tratando da verificação de e-mail do usuário
 if (isset($_POST['verificarEmail'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['verificarEmail'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $nomeUsuario = $parametrosDivididos[0];
@@ -197,7 +197,7 @@ if (isset($_POST['verificarEmail'])) {
     $cod2 = $parametrosDivididos[3];
     $cod3 = $parametrosDivididos[4];
     $cod4 = $parametrosDivididos[5];
- 
+
     // Uso da biblioteca PHPMailer para o envio de e-mail
     $mail = new PHPMailer(true);
     try {
@@ -207,13 +207,13 @@ if (isset($_POST['verificarEmail'])) {
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'astroguidegroup@gmail.com'; 
-        $mail->Password = 'f--'; 
-        $mail->Port = --;
- 
+        $mail->Password = 'farkppzhndyknioc'; 
+        $mail->Port = 587;
+
         // Envio do e-mail ao usuário
         $mail->setFrom('astroguidegroup@gmail.com');
         $mail->addAddress($email);
- 
+
         // Estilização do corpo do e-mail
         $mail->isHTML(true);
         $mail->Subject = 'Bem-vindo ao AstroGuide';
@@ -223,53 +223,53 @@ if (isset($_POST['verificarEmail'])) {
         $mail->Body .= "<main><h2>Seu código de verificação é:</h2>";
         $mail->Body .= "<p><b>$cod1 $cod2 $cod3 $cod4</b></p>";
         $mail->Body .= "</main></body></html>";
- 
+
         // Verificação do envio do e-mail
         if ($mail->send()){
             echo "Enviado com sucesso";
         }
         else {
-            echo "Email não enviadaso";
+            echo "Email não enviado";
         }
     }
     catch (Exception $e){
         echo "Mensagem não enviada: {$mail->ErrorInfo}";
     }
 }
- 
+
 // Listar os quizzes
 if (isset($_POST['quiz'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['quiz'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $nivel = $parametrosDivididos[0];
     $idAstro = $parametrosDivididos[1];
- 
+
     // Variáveis que receberão as perguntas, alternativas e quais as alternativas corretas
     $arrPerguntas = array();
     $arrAlternativas = array();
     $arrAlternativasCertas = array();
- 
-    // Listar os quizzes do astro e do nível em que o usuário está
+
+    // Listar os quiz do astro e do nível em que o usuário está
     $sql = "SELECT * FROM Quiz WHERE Nivel = $nivel AND Id_Astro = $idAstro";
- 
+
     // Executar o código SQL
     $quizEncontrado = mysqli_query($conectar,$sql);
- 
+
     // Armazenar a linha em que o quiz foi encontrado
     $row = mysqli_fetch_assoc($quizEncontrado);
- 
+
     // Obter a identificação do quiz
     $idQuiz = $row['Id_Quiz'];
- 
+
     // Listar todas as perguntas do quiz
     $sql2  = "SELECT * FROM Pergunta WHERE Id_Quiz = $idQuiz";
- 
+
     // Executar a busca
     $perguntasEncontradas = mysqli_query($conectar,$sql2);
- 
+
     // Caso a busca tenha sido feita com sucesso
     if ($perguntasEncontradas) {
         // Buscar cada pergunta, alternativa e alternativa correta e armazenar nas arrays
@@ -279,7 +279,7 @@ if (isset($_POST['quiz'])) {
             array_push($arrAlternativas, $row['alternativa_1'], $row['alternativa_2'],$row['alternativa_3']);
             array_push($arrAlternativasCertas, $row['Alternativa_Certa']);
         }
- 
+
         // Separar cada palavra e cada significado pelos caracteres "]"
         $stringPerguntas = implode("]",$arrPerguntas);
         $stringAlternativas = implode("]",$arrAlternativas);
@@ -287,23 +287,23 @@ if (isset($_POST['quiz'])) {
         echo "$stringPerguntas@@@@$stringAlternativas@@@@$stringAlternativasCertas";      
     }
 }
- 
+
 // Alterar nome do usuário
 if (isset($_POST['alterarNome'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['alterarNome'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $email = $parametrosDivididos[0];
     $nome = $parametrosDivididos[1];
- 
+
     // Atualização do nome do usuário no banco
     $sql = "UPDATE Usuario SET Nome_Usuario = ? WHERE Email_Responsavel = ?";
- 
+
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sql);
- 
+
      // Verificação SQL Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("ss",$nome,$email);
@@ -318,24 +318,24 @@ if (isset($_POST['alterarNome'])) {
     $verificarInjection->close();
     }
 }
- 
+
 // Registrar que o usuário já completou um nível e desbloquear o próximo
 if (isset($_POST['passarNivel'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['passarNivel'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $email = $parametrosDivididos[0];
     $nivel = $parametrosDivididos[1];
     $pontos = $parametrosDivididos[2];
- 
+
     // Código SQL para atualizar o registro do usuário, aumentando o nível e a pontuação onde o email for igual ao do usuário
     $sql = "UPDATE Usuario SET Nivel_Atual = ?, Total_Pontuacao = ? WHERE Email_Responsavel = ?";
     
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sql);
- 
+
     // Verificação SQL Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("sss",$nivel,$pontos,$email);
@@ -350,26 +350,26 @@ if (isset($_POST['passarNivel'])) {
     $verificarInjection->close();
     }
 }
- 
+
 // Registrar que o usuário já completou todos os níveis de um astro e desbloquear o próximo
 if (isset($_POST['passarAstro'])) {
     // Armazenando os dados contidos na requisição
     $parametros = $_POST['passarAstro'];
- 
+
     // Dividindo os valores em variáveis diferentes
     $parametrosDivididos = explode("#|#", $parametros);
     $email = $parametrosDivididos[0];
     $astro = $parametrosDivididos[1];
     $nivel = $parametrosDivididos[2];
- 
-    // SQL para atualizar o astro e o nível, onde o e-mail for igual ao inserido
+
+    // SQL para atualizar o astro e o nível, onde o email for igual ao inserido
     $sql = "UPDATE Usuario SET Id_Astro = ?, Nivel_Atual = ? WHERE Email_Responsavel = ?";
- 
+
     
     // Previnir SQL Injection
     $verificarInjection = $conectar->prepare($sql);
- 
-    // Verificação de SQL Injection
+
+    // Verificação de  SQL Injection
     if ($verificarInjection) {
         $verificarInjection->bind_param("sss",$astro,$nivel,$email);
         if ($verificarInjection->execute()) {
@@ -383,20 +383,20 @@ if (isset($_POST['passarAstro'])) {
     $verificarInjection->close();
     }
 }
- 
+
 // Buscar as palvras presentes no glossário
 if (isset($_POST['buscarPalavras'])) {
- 
+
     // Buscar as palavras dentro do banco de dados em ordem alfabética
     $sql = "SELECT * FROM Palavra ORDER BY LENGTH(Texto) ASC;";
- 
+
     // Executar a consulta
     $palavrasEncontradas = mysqli_query($conectar,$sql);
- 
+
     // Criar as arrays onde as palavras e os significados serão armazenados
     $arrPalavras = array();
     $arrSignificados = array();
- 
+
     // Caso a busca seja feita com êxito
     if ($palavrasEncontradas) {
         // Buscar palavra por palavra e armazenar nas arrays
@@ -405,7 +405,7 @@ if (isset($_POST['buscarPalavras'])) {
             array_push($arrPalavras, $row['Texto']);
             array_push($arrSignificados, $row['Significado']);
         }
- 
+
         // Separar cada palavra e cada significado pelos caracteres ">>"
         $stringPalavras = implode(">>",$arrPalavras);
         $stringSignificados = implode(">>",$arrSignificados);
